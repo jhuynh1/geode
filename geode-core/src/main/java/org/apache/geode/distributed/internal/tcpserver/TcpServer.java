@@ -68,6 +68,7 @@ import javax.net.ssl.SSLException;
  * <p>
  * This code was factored out of GossipServer.java to allow multiple handlers to share the same
  * gossip server port.
+ * 
  * @since GemFire 5.7
  */
 public class TcpServer {
@@ -141,8 +142,8 @@ public class TcpServer {
   }
 
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
-                   DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
-                   ThreadGroup threadGroup, String threadName) {
+      DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
+      ThreadGroup threadGroup, String threadName) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
@@ -173,7 +174,7 @@ public class TcpServer {
   }
 
   private static PooledExecutorWithDMStats createExecutor(PoolStatHelper poolHelper,
-                                                          final ThreadGroup threadGroup) {
+      final ThreadGroup threadGroup) {
     ThreadFactory factory = new ThreadFactory() {
       private final AtomicInteger threadNum = new AtomicInteger();
 
@@ -190,7 +191,7 @@ public class TcpServer {
   }
 
   public void restarting(InternalDistributedSystem ds, InternalCache cache,
-                         ClusterConfigurationService sharedConfig) throws IOException {
+      ClusterConfigurationService sharedConfig) throws IOException {
     this.shuttingDown = false;
     this.handler.restarting(ds, cache, sharedConfig);
     startServerThread();
@@ -262,6 +263,7 @@ public class TcpServer {
   /**
    * Returns the value of the bound port. If the server was initialized with a port of 0 indicating
    * that any ephemeral port should be used, this method will return the actual bound port.
+   * 
    * @return the locator's tcp/ip port. This will be zero if the locator hasn't been started.
    */
   public int getPort() {
@@ -351,7 +353,9 @@ public class TcpServer {
               + (sock.getInetAddress().getHostAddress() + ":" + sock.getPort()), e);
           return;
         }
-        System.err.println(SimpleDateFormat.getTimeInstance().format(new Date(System.currentTimeMillis()))+" ----  UDO: TcpServer.processRequest...."+sock.toString());
+        System.err
+            .println(SimpleDateFormat.getTimeInstance().format(new Date(System.currentTimeMillis()))
+                + " ----  UDO: TcpServer.processRequest...." + sock.toString());
         int gossipVersion = readGossipVersion(sock, input);
 
         short versionOrdinal;
@@ -511,6 +515,7 @@ public class TcpServer {
 
   /**
    * Returns GossipVersion for older Gemfire versions.
+   * 
    * @return gossip version
    */
   public static int getGossipVersionForOrdinal(short ordinal) {

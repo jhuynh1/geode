@@ -181,14 +181,11 @@ public class TcpServerJUnitTest {
     }
 
     public void restarting(DistributedSystem ds, GemFireCache cache,
-                           ClusterConfigurationService sharedConfig) {
-    }
+        ClusterConfigurationService sharedConfig) {}
 
-    public void endRequest(Object request, long startTime) {
-    }
+    public void endRequest(Object request, long startTime) {}
 
-    public void endResponse(Object request, long startTime) {
-    }
+    public void endResponse(Object request, long startTime) {}
 
   }
 
@@ -200,8 +197,7 @@ public class TcpServerJUnitTest {
       this.latch = latch;
     }
 
-    public void init(TcpServer tcpServer) {
-    }
+    public void init(TcpServer tcpServer) {}
 
     public Object processRequest(Object request) throws IOException {
       Boolean delay = (Boolean) request;
@@ -215,18 +211,14 @@ public class TcpServerJUnitTest {
       return delay;
     }
 
-    public void shutDown() {
-    }
+    public void shutDown() {}
 
     public void restarting(DistributedSystem ds, GemFireCache cache,
-                           ClusterConfigurationService sharedConfig) {
-    }
+        ClusterConfigurationService sharedConfig) {}
 
-    public void endRequest(Object request, long startTime) {
-    }
+    public void endRequest(Object request, long startTime) {}
 
-    public void endResponse(Object request, long startTime) {
-    }
+    public void endResponse(Object request, long startTime) {}
   }
 
   private/* GemStoneAddition */ static class SimpleStats implements PoolStatHelper {
