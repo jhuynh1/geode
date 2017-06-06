@@ -353,9 +353,6 @@ public class TcpServer {
               + (sock.getInetAddress().getHostAddress() + ":" + sock.getPort()), e);
           return;
         }
-        System.err
-            .println(SimpleDateFormat.getTimeInstance().format(new Date(System.currentTimeMillis()))
-                + " ----  UDO: TcpServer.processRequest...." + sock.toString());
         int gossipVersion = readGossipVersion(sock, input);
 
         short versionOrdinal;
