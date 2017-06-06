@@ -144,8 +144,6 @@ public class TCPServerSSLJUnitTest {
 
 
     public void init(TcpServer tcpServer) {
-      // TODO Auto-generated method stub
-
     }
 
     public Object processRequest(Object request) throws IOException {
