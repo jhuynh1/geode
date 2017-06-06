@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
@@ -102,7 +100,7 @@ public class TCPServerSSLJUnitTest {
 
       createTcpClientConnection();
 
-    } catch (LocatorCancelException e){
+    } catch (LocatorCancelException e) {
       // we catching the LocatorCancelException. Expected to have the exception thrown
     }
 
@@ -116,8 +114,8 @@ public class TCPServerSSLJUnitTest {
 
   private Properties getSSLConfigurationProperties() {
     Properties sslProperties = new Properties();
-    sslProperties
-        .setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.LOCATOR.getConstant());
+    sslProperties.setProperty(SSL_ENABLED_COMPONENTS,
+        SecurableCommunicationChannel.LOCATOR.getConstant());
     sslProperties.setProperty(SSL_KEYSTORE,
         TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKey.jks"));
     sslProperties.setProperty(SSL_TRUSTSTORE,
@@ -159,14 +157,11 @@ public class TCPServerSSLJUnitTest {
     }
 
     public void restarting(DistributedSystem ds, GemFireCache cache,
-                           ClusterConfigurationService sharedConfig) {
-    }
+        ClusterConfigurationService sharedConfig) {}
 
-    public void endRequest(Object request, long startTime) {
-    }
+    public void endRequest(Object request, long startTime) {}
 
-    public void endResponse(Object request, long startTime) {
-    }
+    public void endResponse(Object request, long startTime) {}
 
   }
 
@@ -176,9 +171,8 @@ public class TCPServerSSLJUnitTest {
     private List<Integer> recordedSocketsTimeouts = new ArrayList<>();
 
     public DummyTcpServer(int port, InetAddress bind_address, Properties sslConfig,
-                          DistributionConfigImpl cfg,
-                          TcpHandler handler,
-                          PoolStatHelper poolHelper, ThreadGroup threadGroup, String threadName) {
+        DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
+        ThreadGroup threadGroup, String threadName) {
       super(port, bind_address, sslConfig, cfg, handler, poolHelper, threadGroup, threadName);
       if (cfg == null) {
         cfg = new DistributionConfigImpl(sslConfig);
@@ -190,8 +184,7 @@ public class TCPServerSSLJUnitTest {
     protected SocketCreator getSocketCreator() {
       if (this.socketCreator == null) {
         SSLConfigurationFactory.setDistributionConfig(distributionConfig);
-        SSLConfig
-            sslConfig =
+        SSLConfig sslConfig =
             SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.LOCATOR);
         this.socketCreator = new DelaySocketCreator(sslConfig, recordedSocketsTimeouts);
       }
