@@ -14,7 +14,25 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.geode.DataSerializable;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -26,22 +44,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.DataSerializable;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 public class TcpServerJUnitTest {
@@ -179,11 +181,14 @@ public class TcpServerJUnitTest {
     }
 
     public void restarting(DistributedSystem ds, GemFireCache cache,
-        ClusterConfigurationService sharedConfig) {}
+                           ClusterConfigurationService sharedConfig) {
+    }
 
-    public void endRequest(Object request, long startTime) {}
+    public void endRequest(Object request, long startTime) {
+    }
 
-    public void endResponse(Object request, long startTime) {}
+    public void endResponse(Object request, long startTime) {
+    }
 
   }
 
@@ -195,7 +200,8 @@ public class TcpServerJUnitTest {
       this.latch = latch;
     }
 
-    public void init(TcpServer tcpServer) {}
+    public void init(TcpServer tcpServer) {
+    }
 
     public Object processRequest(Object request) throws IOException {
       Boolean delay = (Boolean) request;
@@ -205,20 +211,22 @@ public class TcpServerJUnitTest {
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         }
-        return delay;
-      } else {
-        return delay;
       }
+      return delay;
     }
 
-    public void shutDown() {}
+    public void shutDown() {
+    }
 
     public void restarting(DistributedSystem ds, GemFireCache cache,
-        ClusterConfigurationService sharedConfig) {}
+                           ClusterConfigurationService sharedConfig) {
+    }
 
-    public void endRequest(Object request, long startTime) {}
+    public void endRequest(Object request, long startTime) {
+    }
 
-    public void endResponse(Object request, long startTime) {}
+    public void endResponse(Object request, long startTime) {
+    }
   }
 
   private/* GemStoneAddition */ static class SimpleStats implements PoolStatHelper {
