@@ -143,8 +143,7 @@ public class TCPServerSSLJUnitTest {
     protected/* GemStoneAddition */ boolean shutdown;
 
 
-    public void init(TcpServer tcpServer) {
-    }
+    public void init(TcpServer tcpServer) {}
 
     public Object processRequest(Object request) throws IOException {
       return request;
