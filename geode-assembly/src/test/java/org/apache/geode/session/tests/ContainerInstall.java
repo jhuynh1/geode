@@ -114,7 +114,7 @@ public abstract class ContainerInstall {
     this.connType = connType;
 
     // Removes previous run stuff (modules, installs, etc.)
-    clearPreviousRuns();
+    // clearPreviousRuns();
 
     logger.info("Installing container from URL " + downloadURL);
 

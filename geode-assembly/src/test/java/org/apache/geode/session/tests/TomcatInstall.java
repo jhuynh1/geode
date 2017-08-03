@@ -42,9 +42,9 @@ public class TomcatInstall extends ContainerInstall {
     TOMCAT6(6,
         "http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.37/bin/apache-tomcat-6.0.37.zip"),
     TOMCAT7(7,
-        "http://archive.apache.org/dist/tomcat/tomcat-7/v7.0.73/bin/apache-tomcat-7.0.73.zip"),
+        "http://archive.apache.org/dist/tomcat/tomcat-7/v7.0.55/bin/apache-tomcat-7.0.55.zip"),
     TOMCAT8(8,
-        "http://archive.apache.org/dist/tomcat/tomcat-8/v8.5.15/bin/apache-tomcat-8.5.15.zip"),
+        "http://archive.apache.org/dist/tomcat/tomcat-7/v7.0.79/bin/apache-tomcat-7.0.79.zip"),
     TOMCAT9(9,
         "http://archive.apache.org/dist/tomcat/tomcat-9/v9.0.0.M21/bin/apache-tomcat-9.0.0.M21.zip");
 
@@ -104,42 +104,49 @@ public class TomcatInstall extends ContainerInstall {
   }
 
   private static final String[] tomcatRequiredJars =
-      {"antlr", "commons-lang", "fastutil", "geode-core", "geode-modules", "geode-modules-tomcat7",
-          "geode-modules-tomcat8", "javax.transaction-api", "jgroups", "log4j-api", "log4j-core",
-          "log4j-jul", "shiro-core", "slf4j-api", "slf4j-jdk14", "commons-validator"};
+      {"antlr", "gemfire", "spring-core", "spring-shell", "log4j-api", "log4j-core"};
 
   private final TomcatVersion version;
 
   public TomcatInstall(TomcatVersion version) throws Exception {
-    this(version, ConnectionType.PEER_TO_PEER, DEFAULT_INSTALL_DIR);
+    this(version, ConnectionType.PEER_TO_PEER, DEFAULT_INSTALL_DIR, null, null);
   }
 
   public TomcatInstall(TomcatVersion version, String installDir) throws Exception {
-    this(version, ConnectionType.PEER_TO_PEER, installDir);
+    this(version, ConnectionType.PEER_TO_PEER, installDir, null, null);
   }
 
   public TomcatInstall(TomcatVersion version, ConnectionType connType) throws Exception {
-    this(version, connType, DEFAULT_INSTALL_DIR);
+    this(version, connType, DEFAULT_INSTALL_DIR, null, null);
+  }
+
+  public TomcatInstall(TomcatVersion version, ConnectionType connType, String installDir)
+      throws Exception {
+    this(version, connType, installDir, null, null);
   }
 
   /**
    * Download and setup an installation tomcat using the {@link ContainerInstall} constructor and
    * some extra functions this class provides
    *
-   * Specifically, this function uses {@link #copyTomcatGeodeReqFiles(String)} to install geode
-   * session into Tomcat, {@link #setupDefaultSettings()} to modify the context and server XML files
-   * within the installation's 'conf' folder, and {@link #updateProperties()} to set the jar
+   * Specifically, this function uses {@link #copyTomcatGeodeReqFiles(String, String)} to install
+   * geode session into Tomcat, {@link #setupDefaultSettings()} to modify the context and server XML
+   * files within the installation's 'conf' folder, and {@link #updateProperties()} to set the jar
    * skipping properties needed to speedup container startup.
    */
-  public TomcatInstall(TomcatVersion version, ConnectionType connType, String installDir)
-      throws Exception {
+  public TomcatInstall(TomcatVersion version, ConnectionType connType, String installDir,
+      String moduleJarDir, String extraJarsPath) throws Exception {
     // Does download and install from URL
     super(installDir, version.getDownloadURL(), connType, "tomcat");
 
     this.version = version;
+    if (moduleJarDir == null)
+      moduleJarDir = getModulePath() + "/lib/";
+    if (extraJarsPath == null)
+      extraJarsPath = GEODE_BUILD_HOME + "/lib/";
 
     // Install geode sessions into tomcat install
-    copyTomcatGeodeReqFiles(GEODE_BUILD_HOME + "/lib/");
+    copyTomcatGeodeReqFiles(moduleJarDir, extraJarsPath);
     // Set some default XML attributes in server and cache XMLs
     setupDefaultSettings();
 
@@ -173,7 +180,8 @@ public class TomcatInstall extends ContainerInstall {
    * {@link ContainerInstall#connType} is client server or peer to peer.
    */
   public String getServerLifeCycleListenerClass() {
-    String className = "org.apache.geode.modules.session.catalina.";
+    // String className = "org.apache.geode.modules.session.catalina.";
+    String className = "com.gemstone.gemfire.modules.session.catalina.";
     switch (getConnectionType()) {
       case PEER_TO_PEER:
         className += "PeerToPeer";
@@ -212,7 +220,9 @@ public class TomcatInstall extends ContainerInstall {
    */
   @Override
   public String getContextSessionManagerClass() {
-    return "org.apache.geode.modules.session.catalina.Tomcat" + version.toInteger()
+    // return "org.apache.geode.modules.session.catalina.Tomcat" + version.toInteger()
+    // + "DeltaSessionManager";
+    return "com.gemstone.gemfire.modules.session.catalina.Tomcat" + version.toInteger()
         + "DeltaSessionManager";
   }
 
@@ -255,39 +265,37 @@ public class TomcatInstall extends ContainerInstall {
    * @throws IOException if the {@link #getModulePath()}, installation lib directory, or extra
    *         directory passed in contain no files.
    */
-  private void copyTomcatGeodeReqFiles(String extraJarsPath) throws IOException {
+  private void copyTomcatGeodeReqFiles(String moduleJarDir, String extraJarsPath)
+      throws IOException {
     ArrayList<File> requiredFiles = new ArrayList<>();
     // The library path for the current tomcat installation
     String tomcatLibPath = getHome() + "/lib/";
 
     // List of required jars and form version regexps from them
-    String versionRegex = "-[0-9]+.*\\.jar";
+    String versionRegex = "-?[0-9]*.*\\.jar";
     ArrayList<Pattern> patterns = new ArrayList<>(tomcatRequiredJars.length);
     for (String jar : tomcatRequiredJars)
       patterns.add(Pattern.compile(jar + versionRegex));
 
-    // Don't need to copy any jars already in the tomcat install
+    // // Don't need to copy any jars already in the tomcat install
     File tomcatLib = new File(tomcatLibPath);
-    if (tomcatLib.exists()) {
-      try {
-        for (File file : tomcatLib.listFiles())
-          patterns.removeIf(pattern -> pattern.matcher(file.getName()).find());
-      } catch (NullPointerException e) {
-        throw new IOException("No files found in tomcat lib directory " + tomcatLibPath);
-      }
-    } else {
-      tomcatLib.mkdir();
-    }
+    // if (tomcatLib.exists()) {
+    // try {
+    // for (File file : tomcatLib.listFiles()) {
+    // patterns.removeIf(pattern -> pattern.matcher(file.getName()).find());
+    // }
+    // } catch (NullPointerException e) {
+    // throw new IOException("No files found in tomcat lib directory " + tomcatLibPath);
+    // }
+    // } else {
+    // tomcatLib.mkdir();
+    // }
 
     // Find all the required jars in the tomcatModulePath
     try {
-      for (File file : (new File(getModulePath() + "/lib/")).listFiles()) {
-        for (Pattern pattern : patterns) {
-          if (pattern.matcher(file.getName()).find()) {
-            requiredFiles.add(file);
-            patterns.remove(pattern);
-            break;
-          }
+      for (File file : (new File(moduleJarDir)).listFiles()) {
+        if (file.isFile() && file.getName().endsWith(".jar")) {
+          requiredFiles.add(file);
         }
       }
     } catch (NullPointerException e) {
@@ -301,7 +309,7 @@ public class TomcatInstall extends ContainerInstall {
         for (Pattern pattern : patterns) {
           if (pattern.matcher(file.getName()).find()) {
             requiredFiles.add(file);
-            patterns.remove(pattern);
+            // patterns.remove(pattern);
             break;
           }
         }
