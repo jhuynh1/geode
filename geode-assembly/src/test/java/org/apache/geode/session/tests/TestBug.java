@@ -44,6 +44,15 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category({DistributedTest.class})
 public class TestBug {
 
+  File serverGemfire = new File("/Users/danuta/Documents/gemfire-8.2");
+  File serverGemfireModules = new File("/Users/danuta/Documents/gemfire-modules-8.2");
+
+  File client0Gemfire = new File("/Users/danuta/Documents/gemfire-8.1.0.9");
+  File client0GemfireModules = new File("/Users/danuta/Documents/gemfire-modules-8.1.0.2");
+
+  File client1Gemfire = serverGemfire;
+  File client1GemfireModules = serverGemfireModules;
+
   @Rule
   public transient TestName testName = new TestName();
 
@@ -51,6 +60,29 @@ public class TestBug {
   public transient ContainerManager manager;
 
   private static String GFSH_LOCATION = "/Users/danuta/Documents/gemfire-8.2/bin/";
+
+  protected void startServer(String name, String GFSHLocation, String classPath, int locatorPort)
+      throws Exception {
+    CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
+
+    command.addOption(CliStrings.START_SERVER__NAME, name);
+    command.addOption(CliStrings.START_SERVER__SERVER_PORT, "0");
+    command.addOption(CliStrings.START_SERVER__CLASSPATH, classPath);
+    command.addOption(CliStrings.START_SERVER__LOCATORS, "localhost[" + locatorPort + "]");
+
+    executeCommand(GFSHLocation + "gfsh " + command.toString());
+  }
+
+  protected void startLocator(String name, String GFSHLocation, String classPath, int port)
+      throws Exception {
+    CommandStringBuilder locStarter = new CommandStringBuilder(CliStrings.START_LOCATOR);
+
+    locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, "loc");
+    locStarter.addOption(CliStrings.START_LOCATOR__CLASSPATH, classPath);
+    locStarter.addOption(CliStrings.START_LOCATOR__PORT, Integer.toString(port));
+
+    executeCommand(GFSHLocation + "gfsh " + locStarter.toString());
+  }
 
   protected void executeCommand(String command) throws Exception {
     ProcessBuilder pb = new ProcessBuilder();
@@ -67,8 +99,10 @@ public class TestBug {
 
   @Before
   public void setup() throws Exception {
-    System.setProperty("GEMFIRE", "/Users/danuta/Documents/gemfire-8.2");
-    int locPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    // Set gemfire property to stop GFSH error message
+    System.setProperty("GEMFIRE", serverGemfire.getAbsolutePath());
+    // Get available port for the locator
+    int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     TomcatInstall install8 = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT8,
         ContainerInstall.ConnectionType.CLIENT_SERVER,
@@ -78,6 +112,8 @@ public class TestBug {
 
     String libDirJars = install8.getHome() + "/lib/*";
     String binDirJars = install8.getHome() + "/bin/*";
+
+
 
     CommandStringBuilder locStarter = new CommandStringBuilder(CliStrings.START_LOCATOR);
     System.out.println("TRYING TO START LOCATOR ON: " + locPort);
@@ -90,15 +126,7 @@ public class TestBug {
 
     install8.setDefaultLocator("localhost", locPort);
 
-    CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
 
-    command.addOption(CliStrings.START_SERVER__NAME, "server");
-    command.addOption(CliStrings.START_SERVER__SERVER_PORT, "0");
-    command.addOption(CliStrings.START_SERVER__CLASSPATH,
-        binDirJars + File.pathSeparator + libDirJars);
-    command.addOption(CliStrings.START_SERVER__LOCATORS, "localhost[" + locPort + "]");
-
-    executeCommand(GFSH_LOCATION + "gfsh " + command.toString());
 
     client = new Client();
     manager = new ContainerManager();
@@ -122,8 +150,6 @@ public class TestBug {
     manager.stopAllActiveContainers();
     manager.cleanUp();
 
-    File locDir = new File("locator_PLEASE");
-
     CommandStringBuilder locStop = new CommandStringBuilder(CliStrings.STOP_LOCATOR);
     executeCommand(GFSH_LOCATION + "gfsh " + locStop.toString());
 
@@ -136,18 +162,44 @@ public class TestBug {
    * use the same session cookie for the same client.
    */
   @Test
-  public void containersShouldReplicateCookies() throws IOException, URISyntaxException {
+  public void checkContainer1GetsPutFromContainer0() throws IOException, URISyntaxException {
+    // This has to happen at the start of every test
     manager.startAllInactiveContainers();
 
+    String key = "value_testSessionPersists";
+    String value = "Foo";
+
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
-    Client.Response resp = client.get(null);
+    Client.Response resp = client.set(key, value);
     String cookie = resp.getSessionCookie();
 
-    for (int i = 1; i < manager.numContainers(); i++) {
+    for (int i = 0; i < manager.numContainers(); i++) {
       client.setPort(Integer.parseInt(manager.getContainerPort(i)));
-      resp = client.get(null);
+      resp = client.get(key);
 
       assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
+      assertEquals("Session data is not replicating properly", value, resp.getResponse());
+    }
+  }
+
+  @Test
+  public void checkContainer0GetsPutFromContainer1() throws IOException, URISyntaxException {
+    // This has to happen at the start of every test
+    manager.startAllInactiveContainers();
+
+    String key = "value_testSessionPersists";
+    String value = "Foo";
+
+    client.setPort(Integer.parseInt(manager.getContainerPort(0)));
+    Client.Response resp = client.set(key, value);
+    String cookie = resp.getSessionCookie();
+
+    for (int i = 0; i < manager.numContainers(); i++) {
+      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
+      resp = client.get(key);
+
+      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
+      assertEquals("Session data is not replicating properly", value, resp.getResponse());
     }
   }
 }
