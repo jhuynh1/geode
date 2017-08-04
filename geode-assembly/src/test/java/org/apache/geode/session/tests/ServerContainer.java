@@ -21,6 +21,7 @@ import java.util.HashMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
+import org.codehaus.cargo.container.Container;
 import org.codehaus.cargo.container.ContainerType;
 import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.State;
@@ -368,7 +369,7 @@ public abstract class ServerContainer {
       attributes.put("port", Integer.toString(locatorPort));
 
       ContainerInstall.editXMLFile(getSystemProperty("cache-xml-file"), "locator", "pool",
-          attributes);
+          attributes, true);
     } else {
       setSystemProperty("locators", locatorAddress + "[" + locatorPort + "]");
     }

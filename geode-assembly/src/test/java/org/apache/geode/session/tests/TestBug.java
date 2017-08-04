@@ -44,22 +44,25 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category({DistributedTest.class})
 public class TestBug {
 
-  File serverGemfire = new File("/Users/danuta/Documents/gemfire-8.2");
-  File serverGemfireModules = new File("/Users/danuta/Documents/gemfire-modules-8.2");
+  private String baseLocation = "/Users/danuta/Documents/";
 
-  File client0Gemfire = new File("/Users/danuta/Documents/gemfire-8.1.0.9");
-  File client0GemfireModules = new File("/Users/danuta/Documents/gemfire-modules-8.1.0.2");
+  File server82Gemfire = new File("/Users/jhuynh/Pivotal/productInstalls/gemfire-8.2");
+  File server82GemfireModules = new File("/Users/jhuynh/Pivotal/productInstalls/gemfire-modules-8.2");
 
-  File client1Gemfire = serverGemfire;
-  File client1GemfireModules = serverGemfireModules;
+  File fixedServer82Gemfire = new File("/Users/jhuynh/Pivotal/productInstalls/gemfire-8.2");
+  File fixedServer82GemfireModules = new File("/Users/jhuynh/Pivotal/productInstalls/gemfire-modules-8.2");
+
+  File client81Gemfire = new File("/Users/jhuynh/Pivotal/productInstalls/gemfire-8.1.0.9");
+  File client81GemfireModules = new File("/Users/jhuynh/Pivotal/productInstalls/gemfire-modules-8.1.0.2");
+
+  File client82Gemfire = server82Gemfire;
+  File client82GemfireModules = server82GemfireModules;
 
   @Rule
   public transient TestName testName = new TestName();
 
   public transient Client client;
   public transient ContainerManager manager;
-
-  private static String GFSH_LOCATION = "/Users/danuta/Documents/gemfire-8.2/bin/";
 
   protected void startServer(String name, String GFSHLocation, String classPath, int locatorPort)
       throws Exception {
@@ -75,6 +78,7 @@ public class TestBug {
 
   protected void startLocator(String name, String GFSHLocation, String classPath, int port)
       throws Exception {
+    System.out.println("STARTING LOCATOR ON PORT: " + port);
     CommandStringBuilder locStarter = new CommandStringBuilder(CliStrings.START_LOCATOR);
 
     locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, "loc");
@@ -100,46 +104,35 @@ public class TestBug {
   @Before
   public void setup() throws Exception {
     // Set gemfire property to stop GFSH error message
-    System.setProperty("GEMFIRE", serverGemfire.getAbsolutePath());
+    System.setProperty("GEMFIRE", server82Gemfire.getAbsolutePath());
+
+    TomcatInstall tomcat755 = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT755,
+        ContainerInstall.ConnectionType.CLIENT_SERVER,
+        ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat755Server",
+        client81Gemfire.getAbsolutePath() + "/lib",
+        client81GemfireModules.getAbsolutePath() + "/lib");
+
+    TomcatInstall tomcat779 = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT779,
+        ContainerInstall.ConnectionType.CLIENT_SERVER,
+        ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat779Server",
+        server82Gemfire.getAbsolutePath() + "/lib",
+        server82GemfireModules.getAbsolutePath() + "/lib");
+
+    String classPathTomcat779 = tomcat779.getHome() + "/lib/*" + File.pathSeparator + tomcat779.getHome() + "/bin/*";
     // Get available port for the locator
     int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    startLocator("loc", server82Gemfire.getAbsolutePath() + "/bin/", classPathTomcat779, locatorPort);
+    startServer("server", server82Gemfire.getAbsolutePath() + "/bin/", classPathTomcat779, locatorPort);
 
-    TomcatInstall install8 = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT8,
-        ContainerInstall.ConnectionType.CLIENT_SERVER,
-        ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat8Server",
-        "/Users/danuta/Documents/modded-gemfire-modules-8.2/lib",
-        "/Users/danuta/Documents/gemfire-8.2/lib");
-
-    String libDirJars = install8.getHome() + "/lib/*";
-    String binDirJars = install8.getHome() + "/bin/*";
-
-
-
-    CommandStringBuilder locStarter = new CommandStringBuilder(CliStrings.START_LOCATOR);
-    System.out.println("TRYING TO START LOCATOR ON: " + locPort);
-    locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, "loc");
-    locStarter.addOption(CliStrings.START_LOCATOR__CLASSPATH,
-        binDirJars + File.pathSeparator + libDirJars);
-    locStarter.addOption(CliStrings.START_LOCATOR__PORT, Integer.toString(locPort));
-
-    executeCommand(GFSH_LOCATION + "gfsh " + locStarter.toString());
-
-    install8.setDefaultLocator("localhost", locPort);
-
-
+    tomcat755.setDefaultLocator("localhost", locatorPort);
+    tomcat779.setDefaultLocator("localhost", locatorPort);
 
     client = new Client();
     manager = new ContainerManager();
 
-    TomcatInstall install7 = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT7,
-        ContainerInstall.ConnectionType.CLIENT_SERVER,
-        ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat7Server",
-        "/Users/danuta/Documents/gemfire-modules-8.1.0.2/lib",
-        "/Users/danuta/Documents/gemfire-8.1.0.9/lib");
-    install7.setDefaultLocator("localhost", locPort);
-
     manager.setTestName(testName.getMethodName());
-    manager.addContainer(install7);
+    manager.addContainer(tomcat755);
+//    manager.addContainer(tomcat779);
   }
 
   /**
@@ -151,16 +144,12 @@ public class TestBug {
     manager.cleanUp();
 
     CommandStringBuilder locStop = new CommandStringBuilder(CliStrings.STOP_LOCATOR);
-    executeCommand(GFSH_LOCATION + "gfsh " + locStop.toString());
+    executeCommand(server82Gemfire.getAbsolutePath() + "/bin/gfsh " + locStop.toString());
 
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.STOP_SERVER);
-    executeCommand(GFSH_LOCATION + "gfsh " + command.toString());
+    executeCommand(server82Gemfire.getAbsolutePath() + "/bin/gfsh " + command.toString());
   }
 
-  /**
-   * Test that when multiple containers are using session replication, all of the containers will
-   * use the same session cookie for the same client.
-   */
   @Test
   public void checkContainer1GetsPutFromContainer0() throws IOException, URISyntaxException {
     // This has to happen at the start of every test
@@ -190,7 +179,7 @@ public class TestBug {
     String key = "value_testSessionPersists";
     String value = "Foo";
 
-    client.setPort(Integer.parseInt(manager.getContainerPort(0)));
+    client.setPort(Integer.parseInt(manager.getContainerPort(1)));
     Client.Response resp = client.set(key, value);
     String cookie = resp.getSessionCookie();
 

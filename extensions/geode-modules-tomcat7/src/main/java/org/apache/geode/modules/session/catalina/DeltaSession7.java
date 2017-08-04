@@ -18,6 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;

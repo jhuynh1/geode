@@ -41,6 +41,8 @@ public class TomcatInstall extends ContainerInstall {
   public enum TomcatVersion {
     TOMCAT6(6,
         "http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.37/bin/apache-tomcat-6.0.37.zip"),
+    TOMCAT7(7,
+        "http://archive.apache.org/dist/tomcat/tomcat-7/v7.0.79/bin/apache-tomcat-7.0.79.zip"),
     TOMCAT755(7,
         "http://archive.apache.org/dist/tomcat/tomcat-7/v7.0.55/bin/apache-tomcat-7.0.55.zip"),
     TOMCAT779(7,
@@ -70,23 +72,23 @@ public class TomcatInstall extends ContainerInstall {
         case 6:
         case 7:
         case 8:
-          getVersion();
+          return getVersion();
         case 9:
           return 8;
         default:
-          getVersion();
-      }
-      switch (this) {
-        case TOMCAT6:
-        case TOMCAT755:
-        case TOMCAT779:
-        case TOMCAT8:
           return getVersion();
-        case TOMCAT9:
-          return 8;
-        default:
-          throw new IllegalArgumentException("Illegal tomcat version option");
       }
+//      switch (this) {
+//        case TOMCAT6:
+//        case TOMCAT755:
+//        case TOMCAT779:
+//        case TOMCAT8:
+//          return getVersion();
+//        case TOMCAT9:
+//          return 8;
+//        default:
+//          throw new IllegalArgumentException("Illegal tomcat version option");
+//      }
     }
 
     public int getVersion() {
@@ -106,6 +108,7 @@ public class TomcatInstall extends ContainerInstall {
         case TOMCAT6:
           return null;
         case TOMCAT755:
+        case TOMCAT779:
           return "tomcat.util.scan.DefaultJarScanner.jarsToSkip";
         case TOMCAT8:
         case TOMCAT9:

@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -419,13 +420,26 @@ public abstract class ContainerInstall {
       DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
       Document doc = docBuilder.parse(XMLPath);
 
+      Node node = null;
       // Get node with specified tagId
-      Node node = findNodeWithAttribute(doc, tagName, "id", tagId);
+      if (tagId != null) {
+        node = findNodeWithAttribute(doc, tagName, "id", tagId);
+      }
+      else if (writeOnSimilarAttributeNames){
+        NodeList nodes = doc.getElementsByTagName(tagName);
+        for (int i = 0; i < nodes.getLength(); i++) {
+          Node n = nodes.item(i);
+          if (nodeHasExactAttributes(n, attributes, false)) {
+            node = n;
+            break;
+          }
+        }
+      }
       // If no node is found
-      if (node != null
-          || (writeOnSimilarAttributeNames && nodeHasExactAttributes(node, attributes, false))) {
+      if (node != null) {
         rewriteNodeAttributes(node, attributes);
-        ((Element) node).setAttribute("id", tagId);
+        if (tagId != null)
+          ((Element) node).setAttribute("id", tagId);
       } else {
         Element e = doc.createElement(tagName);
         // Set id attribute

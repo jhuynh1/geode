@@ -40,6 +40,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
@@ -531,6 +532,11 @@ public class DeltaSession extends StandardSession
     this.maxInactiveInterval = in.readInt();
     this.isNew = in.readBoolean();
     this.isValid = in.readBoolean();
+    try {
+      Field field = this.getClass().getDeclaredField("attributes");
+    } catch (NoSuchFieldException e) {
+      e.printStackTrace();
+    }
     this.attributes = readInAttributes(in);
     this.serializedPrincipal = DataSerializer.readByteArray(in);
 
