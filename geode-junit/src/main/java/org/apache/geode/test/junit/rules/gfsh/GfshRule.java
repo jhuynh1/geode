@@ -41,7 +41,7 @@ public class GfshRule extends ExternalResource {
 
   private static final String DOUBLE_QUOTE = "\"";
 
-  private TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private TemporaryFolder temporaryFolder = new TemporaryFolder(new File(System.getProperty("java.io.tmpdir")));
   private List<GfshExecution> gfshExecutions;
   private Path gfsh;
 

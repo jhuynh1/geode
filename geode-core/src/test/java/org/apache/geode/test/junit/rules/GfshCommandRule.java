@@ -77,11 +77,20 @@ public class GfshCommandRule extends DescribedExternalResource {
   private int gfshTimeout = 2;
   private boolean connected = false;
   private IgnoredException ignoredException;
-  private TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private TemporaryFolder temporaryFolder = new TemporaryFolder(new File(System.getProperty("java.io.tmpdir")));
   private File workingDir;
   private CommandResult commandResult;
 
   public GfshCommandRule() {
+    try {
+      temporaryFolder.create();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  public GfshCommandRule(File parentForTempDirectory) {
+    this.temporaryFolder = new TemporaryFolder(parentForTempDirectory);
     try {
       temporaryFolder.create();
     } catch (IOException e) {
