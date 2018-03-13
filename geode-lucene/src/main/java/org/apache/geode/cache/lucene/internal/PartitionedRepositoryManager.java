@@ -47,7 +47,9 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   protected final ConcurrentHashMap<Integer, IndexRepository> indexRepositories =
       new ConcurrentHashMap<Integer, IndexRepository>();
 
-  /** The user region for this index */
+  /**
+   * The user region for this index
+   */
   protected PartitionedRegion userRegion = null;
   protected final LuceneSerializer serializer;
   protected final InternalLuceneIndex index;
@@ -76,7 +78,12 @@ public class PartitionedRepositoryManager implements RepositoryManager {
         throw new BucketNotFoundException(
             "User bucket was not found for region " + region + "bucket id " + bucketId);
       } else {
-        repos.add(getRepository(userBucket.getId()));
+        if (index.isIndexAvailable()) {
+          repos.add(getRepository(userBucket.getId()));
+        } else {
+          throw new LuceneIndexCreationInProgressException(
+              "Lucene Index creation still in progress for bucket: " + userBucket.getId());
+        }
       }
     }
 
@@ -114,14 +121,16 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   }
 
   protected IndexRepository computeRepository(Integer bucketId, LuceneSerializer serializer,
-      InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
+                                              InternalLuceneIndex index,
+                                              PartitionedRegion userRegion,
+                                              IndexRepository oldRepository)
       throws IOException {
     return indexRepositoryFactory.computeIndexRepository(bucketId, serializer, index, userRegion,
         oldRepository);
   }
 
 
-  private IndexRepository computeRepository(Integer bucketId) {
+  protected IndexRepository computeRepository(Integer bucketId) {
     try {
       isDataRegionReady.await();
     } catch (InterruptedException e) {
@@ -155,7 +164,8 @@ public class PartitionedRepositoryManager implements RepositoryManager {
       try {
         computeRepository(bucketId);
       } catch (LuceneIndexDestroyedException e) {
-        /* expected exception */}
+        /* expected exception */
+      }
     }
   }
 }
