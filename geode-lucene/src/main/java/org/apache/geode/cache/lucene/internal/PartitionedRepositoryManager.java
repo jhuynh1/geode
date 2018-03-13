@@ -78,7 +78,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
         throw new BucketNotFoundException(
             "User bucket was not found for region " + region + "bucket id " + bucketId);
       } else {
-        if (index.isIndexAvailable()) {
+        if (index.isIndexAvailable(userBucket.getId())) {
           repos.add(getRepository(userBucket.getId()));
         } else {
           throw new LuceneIndexCreationInProgressException(

@@ -230,11 +230,11 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   }
 
   @Override
-  public boolean isIndexAvailable() {
+  public boolean isIndexAvailable(int id) {
     PartitionedRegion fileAndChunkRegion = getFileAndChunkRegion();
     if(fileAndChunkRegion != null)
     {
-      return fileAndChunkRegion.get(IndexRepositoryFactory.APACHE_GEODE_INDEX_COMPLETE) != null;
+      return fileAndChunkRegion.get(IndexRepositoryFactory.APACHE_GEODE_INDEX_COMPLETE,id) != null;
     }
     return false;
   }

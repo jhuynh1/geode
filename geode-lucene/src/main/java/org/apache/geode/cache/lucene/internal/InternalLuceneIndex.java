@@ -39,5 +39,5 @@ public interface InternalLuceneIndex extends LuceneIndex {
 
   void initialize();
 
-  boolean isIndexAvailable();
+  boolean isIndexAvailable(int id);
 }
