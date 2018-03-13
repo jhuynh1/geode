@@ -50,4 +50,9 @@ public class LuceneRawIndex extends LuceneIndexImpl {
 
   @Override
   public void destroy(boolean initiator) {}
+
+  @Override
+  public boolean isIndexAvailable() {
+    return true;
+  }
 }
