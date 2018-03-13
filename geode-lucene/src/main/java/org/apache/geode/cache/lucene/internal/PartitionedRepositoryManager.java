@@ -121,7 +121,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   }
 
 
-  protected IndexRepository computeRepository(Integer bucketId) {
+  private IndexRepository computeRepository(Integer bucketId) {
     try {
       isDataRegionReady.await();
     } catch (InterruptedException e) {

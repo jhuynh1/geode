@@ -26,9 +26,9 @@ import org.apache.geode.internal.Version;
 
 public class LuceneResultStructImpl<K, V>
     implements LuceneResultStruct<K, V>, DataSerializableFixedID {
-  K key;
-  V value;
-  float score;
+  private K key;
+  private V value;
+  private float score;
 
   public LuceneResultStructImpl() {}
 

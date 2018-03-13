@@ -41,7 +41,8 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * An Async event queue listener that writes all of the events in batches to Lucene
  */
-public class LuceneEventListener implements AsyncEventListener {
+public class
+LuceneEventListener implements AsyncEventListener {
 
   private static LuceneExceptionObserver exceptionObserver = exception -> {
   };
