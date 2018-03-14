@@ -21,8 +21,10 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 
@@ -72,6 +74,8 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   private static final Logger logger = LogService.getLogger();
   public static final String FILE_REGION_LOCK_FOR_BUCKET_ID = "FileRegionLockForBucketId:";
 
+  private ExecutorService waitingThreadPool;
+
 
   public LuceneIndexForPartitionedRegion(String indexName, String regionPath, InternalCache cache) {
     super(indexName, regionPath, cache);
@@ -80,13 +84,29 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     this.fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), statsName);
   }
 
+  public LuceneIndexForPartitionedRegion(String indexName, String regionPath, InternalCache cache,
+                                         Analyzer analyzer,
+                                         Map<String, Analyzer> fieldAnalyzers,
+                                         LuceneSerializer serializer, RegionAttributes attributes,
+                                         String aeqId, String[] fields,
+                                         ExecutorService waitingThreadPool) {
+    this(indexName, regionPath, cache);
+    this.waitingThreadPool = waitingThreadPool;
+    this.setSearchableFields(fields);
+    this.setAnalyzer(analyzer);
+    this.setFieldAnalyzers(fieldAnalyzers);
+    this.setLuceneSerializer(serializer);
+    this.setupRepositoryManager(serializer);
+    this.createAEQ(attributes, aeqId);
+  }
+
   protected RepositoryManager createRepositoryManager(LuceneSerializer luceneSerializer) {
     LuceneSerializer mapper = luceneSerializer;
     if (mapper == null) {
       mapper = new HeterogeneousLuceneSerializer();
     }
     PartitionedRepositoryManager partitionedRepositoryManager =
-        new PartitionedRepositoryManager(this, mapper);
+        new PartitionedRepositoryManager(this, mapper, waitingThreadPool);
     return partitionedRepositoryManager;
   }
 
@@ -232,9 +252,8 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   @Override
   public boolean isIndexAvailable(int id) {
     PartitionedRegion fileAndChunkRegion = getFileAndChunkRegion();
-    if(fileAndChunkRegion != null)
-    {
-      return fileAndChunkRegion.get(IndexRepositoryFactory.APACHE_GEODE_INDEX_COMPLETE,id) != null;
+    if (fileAndChunkRegion != null) {
+      return fileAndChunkRegion.get(IndexRepositoryFactory.APACHE_GEODE_INDEX_COMPLETE, id) != null;
     }
     return false;
   }
@@ -397,6 +416,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     return DistributedLockService
         .getServiceNamed(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME);
   }
+
   protected BucketRegion getMatchingBucket(PartitionedRegion region, Integer bucketId) {
     // Force the bucket to be created if it is not already
     region.getOrCreateNodeForBucketWrite(bucketId, null);

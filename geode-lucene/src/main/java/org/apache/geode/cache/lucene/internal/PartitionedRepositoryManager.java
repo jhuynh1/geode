@@ -20,6 +20,9 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Region;
@@ -32,9 +35,11 @@ import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
+import org.apache.geode.internal.logging.LogService;
 
 public class PartitionedRepositoryManager implements RepositoryManager {
-  public static IndexRepositoryFactory indexRepositoryFactory = new IndexRepositoryFactory();
+  private final Logger logger = LogService.getLogger();
+  public IndexRepositoryFactory indexRepositoryFactory = new IndexRepositoryFactory();
   /**
    * map of the parent bucket region to the index repository
    *
@@ -56,10 +61,14 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   protected volatile boolean closed;
   private final CountDownLatch isDataRegionReady = new CountDownLatch(1);
 
-  public PartitionedRepositoryManager(InternalLuceneIndex index, LuceneSerializer serializer) {
+  private final ExecutorService waitingThreadPoolFromDM;
+
+  public PartitionedRepositoryManager(InternalLuceneIndex index, LuceneSerializer serializer,
+                                      ExecutorService waitingThreadPool) {
     this.index = index;
     this.serializer = serializer;
     this.closed = false;
+    this.waitingThreadPoolFromDM = waitingThreadPool;
   }
 
   public void setUserRegionForRepositoryManager(PartitionedRegion userRegion) {
@@ -81,6 +90,14 @@ public class PartitionedRepositoryManager implements RepositoryManager {
         if (index.isIndexAvailable(userBucket.getId())) {
           repos.add(getRepository(userBucket.getId()));
         } else {
+          waitingThreadPoolFromDM.execute(() -> {
+            try {
+              repos.add(getRepository(userBucket.getId()));
+            } catch (BucketNotFoundException e) {
+              logger.debug(
+                  "Lucene Index creation still in progress. Catching BucketNotFoundException");
+            }
+          });
           throw new LuceneIndexCreationInProgressException(
               "Lucene Index creation still in progress for bucket: " + userBucket.getId());
         }

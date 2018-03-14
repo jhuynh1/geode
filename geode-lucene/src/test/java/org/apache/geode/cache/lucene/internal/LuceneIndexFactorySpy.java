@@ -14,10 +14,15 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.mockito.Mockito;
 
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 
 public class LuceneIndexFactorySpy extends LuceneIndexImplFactory {
@@ -36,7 +41,13 @@ public class LuceneIndexFactorySpy extends LuceneIndexImplFactory {
   };
 
   @Override
-  public LuceneIndexImpl create(String indexName, String regionPath, InternalCache cache) {
+  public LuceneIndexImpl create(String indexName, String regionPath, InternalCache cache,
+                                Analyzer analyzer,
+                                Map<String, Analyzer> fieldAnalyzers,
+                                LuceneSerializer serializer,
+                                RegionAttributes attributes,
+                                String aeqId, String[] fields,
+                                ExecutorService waitingThreadPool) {
     LuceneIndexForPartitionedRegion index =
         Mockito.spy(new ExtendedLuceneIndexForPartitionedRegion(indexName, regionPath, cache));
     return index;
