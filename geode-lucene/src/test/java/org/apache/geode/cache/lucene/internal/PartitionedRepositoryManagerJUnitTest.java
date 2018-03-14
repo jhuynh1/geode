@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
@@ -142,7 +143,8 @@ public class PartitionedRepositoryManagerJUnitTest {
     when(prRoot.get("rid")).thenReturn(prConfig);
     PowerMockito.mockStatic(PartitionedRegionHelper.class);
     PowerMockito.when(PartitionedRegionHelper.getPRRoot(cache)).thenReturn(prRoot);
-    repoManager = new PartitionedRepositoryManager(indexForPR, serializer);
+    repoManager = new PartitionedRepositoryManager(indexForPR, serializer,
+        Executors.newSingleThreadExecutor());
     repoManager.setUserRegionForRepositoryManager(userRegion);
     repoManager.allowRepositoryComputation();
   }

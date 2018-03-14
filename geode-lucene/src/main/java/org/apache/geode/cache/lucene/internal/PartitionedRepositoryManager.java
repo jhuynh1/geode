@@ -39,7 +39,7 @@ import org.apache.geode.internal.logging.LogService;
 
 public class PartitionedRepositoryManager implements RepositoryManager {
   private final Logger logger = LogService.getLogger();
-  public IndexRepositoryFactory indexRepositoryFactory = new IndexRepositoryFactory();
+  public static IndexRepositoryFactory indexRepositoryFactory = new IndexRepositoryFactory();
   /**
    * map of the parent bucket region to the index repository
    *
