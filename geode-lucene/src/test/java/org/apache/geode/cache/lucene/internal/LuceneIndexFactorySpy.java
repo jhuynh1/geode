@@ -42,12 +42,9 @@ public class LuceneIndexFactorySpy extends LuceneIndexImplFactory {
 
   @Override
   public LuceneIndexImpl create(String indexName, String regionPath, InternalCache cache,
-                                Analyzer analyzer,
-                                Map<String, Analyzer> fieldAnalyzers,
-                                LuceneSerializer serializer,
-                                RegionAttributes attributes,
-                                String aeqId, String[] fields,
-                                ExecutorService waitingThreadPool) {
+      Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers, LuceneSerializer serializer,
+      RegionAttributes attributes, String aeqId, String[] fields,
+      ExecutorService waitingThreadPool) {
     LuceneIndexForPartitionedRegion index =
         Mockito.spy(new ExtendedLuceneIndexForPartitionedRegion(indexName, regionPath, cache));
     return index;

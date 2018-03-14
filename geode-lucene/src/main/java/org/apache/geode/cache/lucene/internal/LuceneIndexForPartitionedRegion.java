@@ -85,11 +85,9 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   }
 
   public LuceneIndexForPartitionedRegion(String indexName, String regionPath, InternalCache cache,
-                                         Analyzer analyzer,
-                                         Map<String, Analyzer> fieldAnalyzers,
-                                         LuceneSerializer serializer, RegionAttributes attributes,
-                                         String aeqId, String[] fields,
-                                         ExecutorService waitingThreadPool) {
+      Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers, LuceneSerializer serializer,
+      RegionAttributes attributes, String aeqId, String[] fields,
+      ExecutorService waitingThreadPool) {
     this(indexName, regionPath, cache);
     this.waitingThreadPool = waitingThreadPool;
     this.setSearchableFields(fields);
@@ -184,11 +182,9 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   }
 
   protected <K, V> Region<K, V> createRegion(final String regionName,
-                                             final RegionShortcut regionShortCut,
-                                             final String colocatedWithRegionName,
-                                             final PartitionAttributes partitionAttributes,
-                                             final RegionAttributes regionAttributes,
-                                             PartitionListener lucenePrimaryBucketListener) {
+      final RegionShortcut regionShortCut, final String colocatedWithRegionName,
+      final PartitionAttributes partitionAttributes, final RegionAttributes regionAttributes,
+      PartitionListener lucenePrimaryBucketListener) {
     PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
     if (lucenePrimaryBucketListener != null) {
       partitionAttributesFactory.addPartitionListener(lucenePrimaryBucketListener);
@@ -208,13 +204,12 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     return createRegion(regionName, attributes);
   }
 
-  public void close() {
-  }
+  public void close() {}
 
   @Override
   public void dumpFiles(final String directory) {
     ResultCollector results = FunctionService.onRegion(getDataRegion())
-        .setArguments(new String[]{directory, indexName}).execute(DumpDirectoryFiles.ID);
+        .setArguments(new String[] {directory, indexName}).execute(DumpDirectoryFiles.ID);
     results.getResult();
   }
 
@@ -288,9 +283,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   }
 
   public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
-                                                PartitionedRegion userRegion,
-                                                final IndexRepository oldRepository)
-      throws IOException {
+      PartitionedRegion userRegion, final IndexRepository oldRepository) throws IOException {
     final PartitionedRegion fileRegion = getFileAndChunkRegion();
     BucketRegion fileAndChunkBucket = getFileBucketRegion(bucketId, fileRegion);
 
@@ -327,12 +320,11 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     try {
       // bucketTargetingMap handles partition resolver (via bucketId as callbackArg)
       Map bucketTargetingMap = getBucketTargetingMap(fileAndChunkBucket, bucketId);
-      RegionDirectory dir =
-          new RegionDirectory(bucketTargetingMap, getFileSystemStats());
+      RegionDirectory dir = new RegionDirectory(bucketTargetingMap, getFileSystemStats());
       IndexWriterConfig config = new IndexWriterConfig(getAnalyzer());
       IndexWriter writer = new IndexWriter(dir, config);
-      repo = new IndexRepositoryImpl(fileAndChunkBucket, writer, serializer,
-          getIndexStats(), dataBucket, lockService, lockName, this);
+      repo = new IndexRepositoryImpl(fileAndChunkBucket, writer, serializer, getIndexStats(),
+          dataBucket, lockService, lockName, this);
       success = false;
       // fileRegion ops (get/put) need bucketId as a callbackArg for PartitionResolver
       if (null != fileRegion.get(APACHE_GEODE_INDEX_COMPLETE, bucketId)) {
@@ -370,8 +362,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   }
 
   private boolean reindexUserDataRegion(Integer bucketId, PartitionedRegion userRegion,
-                                        PartitionedRegion fileRegion, BucketRegion dataBucket,
-                                        IndexRepository repo)
+      PartitionedRegion fileRegion, BucketRegion dataBucket, IndexRepository repo)
       throws IOException {
     Set<IndexRepository> affectedRepos = new HashSet<IndexRepository>();
 

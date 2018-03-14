@@ -15,6 +15,7 @@
 package org.apache.geode.cache.lucene.internal;
 
 import java.io.IOException;
+import java.util.concurrent.Executors;
 
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
@@ -25,7 +26,7 @@ public class RawLuceneRepositoryManager extends PartitionedRepositoryManager {
   public static IndexRepositoryFactory indexRepositoryFactory = new RawIndexRepositoryFactory();
 
   public RawLuceneRepositoryManager(LuceneIndexImpl index, LuceneSerializer serializer) {
-    super(index, serializer);
+    super(index, serializer, Executors.newSingleThreadExecutor());
   }
 
   @Override

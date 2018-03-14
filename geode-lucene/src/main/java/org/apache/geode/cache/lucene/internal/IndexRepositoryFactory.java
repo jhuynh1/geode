@@ -45,16 +45,13 @@ public class IndexRepositoryFactory {
   private static final Logger logger = LogService.getLogger();
   public static final String APACHE_GEODE_INDEX_COMPLETE = "APACHE_GEODE_INDEX_COMPLETE";
 
-  public IndexRepositoryFactory() {
-  }
+  public IndexRepositoryFactory() {}
 
   public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
-                                                InternalLuceneIndex index,
-                                                PartitionedRegion userRegion,
-                                                final IndexRepository oldRepository)
+      InternalLuceneIndex index, PartitionedRegion userRegion, final IndexRepository oldRepository)
       throws IOException {
-    return ((LuceneIndexForPartitionedRegion) index)
-        .computeIndexRepository(bucketId, serializer, userRegion, oldRepository);
+    return ((LuceneIndexForPartitionedRegion) index).computeIndexRepository(bucketId, serializer,
+        userRegion, oldRepository);
   }
 
 

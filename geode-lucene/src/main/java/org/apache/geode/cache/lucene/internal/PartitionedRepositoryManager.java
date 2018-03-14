@@ -64,7 +64,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   private final ExecutorService waitingThreadPoolFromDM;
 
   public PartitionedRepositoryManager(InternalLuceneIndex index, LuceneSerializer serializer,
-                                      ExecutorService waitingThreadPool) {
+      ExecutorService waitingThreadPool) {
     this.index = index;
     this.serializer = serializer;
     this.closed = false;
@@ -138,9 +138,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   }
 
   protected IndexRepository computeRepository(Integer bucketId, LuceneSerializer serializer,
-                                              InternalLuceneIndex index,
-                                              PartitionedRegion userRegion,
-                                              IndexRepository oldRepository)
+      InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
       throws IOException {
     return indexRepositoryFactory.computeIndexRepository(bucketId, serializer, index, userRegion,
         oldRepository);

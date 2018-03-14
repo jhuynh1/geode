@@ -82,6 +82,7 @@ import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 /**
  * Implementation of LuceneService to create lucene index and query.
+ *
  * @since GemFire 8.5
  */
 public class LuceneServiceImpl implements InternalLuceneService {
@@ -96,8 +97,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "luceneReindex");
   private DistributionManager dm;
 
-  public LuceneServiceImpl() {
-  }
+  public LuceneServiceImpl() {}
 
   @Override
   public org.apache.geode.cache.lucene.LuceneIndexFactory createIndexFactory() {
@@ -171,12 +171,12 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   public static String getUniqueIndexRegionName(String indexName, String regionPath,
-                                                String regionSuffix) {
+      String regionSuffix) {
     return getUniqueIndexName(indexName, regionPath) + regionSuffix;
   }
 
   public void createIndex(String indexName, String regionPath, Map<String, Analyzer> fieldAnalyzers,
-                          LuceneSerializer serializer, boolean allowOnExistingRegion) {
+      LuceneSerializer serializer, boolean allowOnExistingRegion) {
     if (fieldAnalyzers == null || fieldAnalyzers.isEmpty()) {
       throw new IllegalArgumentException("At least one field must be indexed");
     }
@@ -189,9 +189,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   public void createIndex(final String indexName, String regionPath, final Analyzer analyzer,
-                          final Map<String, Analyzer> fieldAnalyzers,
-                          final LuceneSerializer serializer,
-                          boolean allowOnExistingRegion, final String... fields) {
+      final Map<String, Analyzer> fieldAnalyzers, final LuceneSerializer serializer,
+      boolean allowOnExistingRegion, final String... fields) {
 
     if (!regionPath.startsWith("/")) {
       regionPath = "/" + regionPath;
@@ -221,9 +220,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   private void createIndexOnExistingRegion(PartitionedRegion region, String indexName,
-                                           String regionPath, String[] fields, Analyzer analyzer,
-                                           Map<String, Analyzer> fieldAnalyzers,
-                                           LuceneSerializer serializer) {
+      String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers,
+      LuceneSerializer serializer) {
     validateRegionAttributes(region.getAttributes());
 
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
@@ -242,7 +240,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   protected boolean createLuceneIndexOnDataRegion(final PartitionedRegion userRegion,
-                                                  final InternalLuceneIndex luceneIndex) {
+      final InternalLuceneIndex luceneIndex) {
     try {
       PartitionedRepositoryManager repositoryManager =
           (PartitionedRepositoryManager) luceneIndex.getRepositoryManager();
@@ -323,27 +321,22 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   public LuceneIndexImpl beforeDataRegionCreated(final String indexName, final String regionPath,
-                                                 RegionAttributes attributes,
-                                                 final Analyzer analyzer,
-                                                 final Map<String, Analyzer> fieldAnalyzers,
-                                                 String aeqId, final LuceneSerializer serializer,
-                                                 final String... fields) {
+      RegionAttributes attributes, final Analyzer analyzer,
+      final Map<String, Analyzer> fieldAnalyzers, String aeqId, final LuceneSerializer serializer,
+      final String... fields) {
     return createIndexObject(indexName, regionPath, fields, analyzer, fieldAnalyzers, serializer,
         attributes, aeqId);
   }
 
   private LuceneIndexImpl createIndexObject(String indexName, String regionPath, String[] fields,
-                                            Analyzer analyzer,
-                                            Map<String, Analyzer> fieldAnalyzers,
-                                            LuceneSerializer serializer,
-                                            RegionAttributes attributes, String aeqId) {
-    return luceneIndexFactory
-        .create(indexName, regionPath, cache, analyzer, fieldAnalyzers, serializer, attributes,
-            aeqId, fields, dm.getWaitingThreadPool());
+      Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers, LuceneSerializer serializer,
+      RegionAttributes attributes, String aeqId) {
+    return luceneIndexFactory.create(indexName, regionPath, cache, analyzer, fieldAnalyzers,
+        serializer, attributes, aeqId, fields, dm.getWaitingThreadPool());
   }
 
   private void registerDefinedIndex(final String indexName, final String regionPath,
-                                    final LuceneIndexCreationProfile luceneIndexCreationProfile) {
+      final LuceneIndexCreationProfile luceneIndexCreationProfile) {
     String regionAndIndex = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
     if (definedIndexMap.containsKey(regionAndIndex) || indexMap.containsKey(regionAndIndex)) {
       throw new LuceneIndexExistsException(indexName, regionPath);
@@ -538,7 +531,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     }
   }
 
-  //Public for test purposes
+  // Public for test purposes
   public static void registerDataSerializables() {
     DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_CHUNK_KEY, ChunkKey.class);
 

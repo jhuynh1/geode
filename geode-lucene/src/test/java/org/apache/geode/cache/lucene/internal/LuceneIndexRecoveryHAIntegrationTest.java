@@ -19,6 +19,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -44,7 +45,7 @@ import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({IntegrationTest.class, LuceneTest.class})
 public class LuceneIndexRecoveryHAIntegrationTest {
-  String[] indexedFields = new String[] {"txt"};
+  String[] indexedFields = new String[]{"txt"};
   HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();
   Analyzer analyzer = new StandardAnalyzer();
 
@@ -54,7 +55,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
 
   @Before
   public void setup() {
-    indexedFields = new String[] {"txt"};
+    indexedFields = new String[]{"txt"};
     mapper = new HeterogeneousLuceneSerializer();
     analyzer = new StandardAnalyzer();
     LuceneServiceImpl.registerDataSerializables();
@@ -91,7 +92,10 @@ public class LuceneIndexRecoveryHAIntegrationTest {
     userRegion.put("rebalance", "test");
     service.waitUntilFlushed("index1", "userRegion", 30000, TimeUnit.MILLISECONDS);
 
-    RepositoryManager manager = new PartitionedRepositoryManager((LuceneIndexImpl) index, mapper);
+    RepositoryManager
+        manager =
+        new PartitionedRepositoryManager((LuceneIndexImpl) index, mapper,
+            Executors.newSingleThreadExecutor());
     IndexRepository repo = manager.getRepository(userRegion, 0, null);
     assertNotNull(repo);
 
@@ -106,13 +110,13 @@ public class LuceneIndexRecoveryHAIntegrationTest {
 
     userRegion = (PartitionedRegion) regionfactory.create("userRegion");
     userRegion.put("rebalance", "test");
-    manager = new PartitionedRepositoryManager((LuceneIndexImpl) index, mapper);
+    manager =
+        new PartitionedRepositoryManager((LuceneIndexImpl) index, mapper,
+            Executors.newSingleThreadExecutor());
     IndexRepository newRepo = manager.getRepository(userRegion, 0, null);
 
     Assert.assertNotEquals(newRepo, repo);
   }
-
-
 
   private void verifyIndexFinishFlushing(String indexName, String regionName)
       throws InterruptedException {

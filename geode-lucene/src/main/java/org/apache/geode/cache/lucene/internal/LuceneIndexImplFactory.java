@@ -25,19 +25,16 @@ import org.apache.geode.internal.cache.InternalCache;
 
 public class LuceneIndexImplFactory {
 
-  public LuceneIndexImplFactory() {
-  }
+  public LuceneIndexImplFactory() {}
 
   public LuceneIndexImpl create(String indexName, String regionPath, InternalCache cache) {
     return new LuceneIndexForPartitionedRegion(indexName, regionPath, cache);
   }
 
   public LuceneIndexImpl create(String indexName, String regionPath, InternalCache cache,
-                                Analyzer analyzer,
-                                Map<String, Analyzer> fieldAnalyzers,
-                                LuceneSerializer serializer, RegionAttributes attributes,
-                                String aeqId,
-                                String[] fields, ExecutorService waitingThreadPool) {
+      Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers, LuceneSerializer serializer,
+      RegionAttributes attributes, String aeqId, String[] fields,
+      ExecutorService waitingThreadPool) {
     return new LuceneIndexForPartitionedRegion(indexName, regionPath, cache, analyzer,
         fieldAnalyzers, serializer, attributes, aeqId, fields, waitingThreadPool);
   }
