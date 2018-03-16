@@ -107,6 +107,7 @@ public class LuceneRegionListener implements RegionListener {
   public void afterCreate(Region region) {
     if (region.getFullPath().equals(this.regionPath)
         && this.afterCreateInvoked.compareAndSet(false, true)) {
+      System.err.println(this+".afterCreate Service: "+service+"   LuceneIndex: "+luceneIndex);
       this.service.afterDataRegionCreated(this.luceneIndex);
     }
   }

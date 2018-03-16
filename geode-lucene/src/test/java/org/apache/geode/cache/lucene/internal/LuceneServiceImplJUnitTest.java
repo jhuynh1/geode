@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -52,6 +53,7 @@ import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
@@ -110,16 +112,23 @@ public class LuceneServiceImplJUnitTest {
 
   @Test
   public void userRegionShouldNotBeSetBeforeIndexInitialized() throws Exception {
+    DistributionManager dm = mock(DistributionManager.class);
     TestLuceneServiceImpl testService = new TestLuceneServiceImpl();
     Field f = LuceneServiceImpl.class.getDeclaredField("cache");
     f.setAccessible(true);
     f.set(testService, cache);
+    f = LuceneServiceImpl.class.getDeclaredField("dm");
+    f.setAccessible(true);
+    f.set(testService, dm);
     AsyncEventQueueFactoryImpl aeqFactory = mock(AsyncEventQueueFactoryImpl.class);
     when(cache.createAsyncEventQueueFactory()).thenReturn(aeqFactory);
 
     DistributedSystem ds = mock(DistributedSystem.class);
+
     Statistics luceneIndexStats = mock(Statistics.class);
     when(cache.getDistributedSystem()).thenReturn(ds);
+    when(cache.getDistributionManager()).thenReturn(dm);
+    when(dm.getWaitingThreadPool()).thenReturn(Executors.newSingleThreadExecutor());
     when(((StatisticsFactory) ds).createAtomicStatistics(any(), anyString()))
         .thenReturn(luceneIndexStats);
     when(cache.getRegion(anyString())).thenReturn(region);

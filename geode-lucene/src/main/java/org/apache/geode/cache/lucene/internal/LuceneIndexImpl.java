@@ -143,6 +143,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   public void initialize() {
     /* create index region */
     dataRegion = assignDataRegion();
+    System.err.println(this+".initialize  DataRegion: "+dataRegion+"  repositoryManager: "+repositoryManager);
     createLuceneListenersAndFileChunkRegions((PartitionedRepositoryManager) repositoryManager);
     addExtension(dataRegion);
   }
@@ -170,8 +171,8 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     }
     return createAEQ(createAEQFactory(attributes), aeqId);
   }
-
   private AsyncEventQueue createAEQ(AsyncEventQueueFactoryImpl factory, String aeqId) {
+    System.err.println(this+".createAEQ RepositoryManager: "+repositoryManager);
     LuceneEventListener listener = new LuceneEventListener(cache, repositoryManager);
     factory.setGatewayEventSubstitutionListener(new LuceneEventSubstitutionFilter());
     AsyncEventQueue indexQueue = factory.create(aeqId, listener);

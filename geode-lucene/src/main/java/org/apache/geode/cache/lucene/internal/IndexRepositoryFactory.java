@@ -50,6 +50,7 @@ public class IndexRepositoryFactory {
   public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
       InternalLuceneIndex index, PartitionedRegion userRegion, final IndexRepository oldRepository)
       throws IOException {
+    System.out.println(this+".computeIndexRepository bucketId: "+bucketId);
     return ((LuceneIndexForPartitionedRegion) index).computeIndexRepository(bucketId, serializer,
         userRegion, oldRepository);
   }

@@ -166,8 +166,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     if (!regionPath.startsWith("/")) {
       regionPath = "/" + regionPath;
     }
-    String name = indexName + "#" + regionPath.replace('/', '_');
-    return name;
+    return indexName + "#" + regionPath.replace('/', '_');
   }
 
   public static String getUniqueIndexRegionName(String indexName, String regionPath,
@@ -232,6 +231,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     LuceneIndexImpl luceneIndex = beforeDataRegionCreated(indexName, regionPath,
         region.getAttributes(), analyzer, fieldAnalyzers, aeqId, serializer, fields);
 
+    System.out.println(this+".createIndexOnExistingRegion  index: "+luceneIndex);
     afterDataRegionCreated(luceneIndex);
 
     region.addAsyncEventQueueId(aeqId, true);
@@ -324,15 +324,24 @@ public class LuceneServiceImpl implements InternalLuceneService {
       RegionAttributes attributes, final Analyzer analyzer,
       final Map<String, Analyzer> fieldAnalyzers, String aeqId, final LuceneSerializer serializer,
       final String... fields) {
-    return createIndexObject(indexName, regionPath, fields, analyzer, fieldAnalyzers, serializer,
-        attributes, aeqId);
+    LuceneIndexImpl
+        index =
+        createIndexObject(indexName, regionPath, fields, analyzer, fieldAnalyzers, serializer,
+            attributes, aeqId);
+    System.err.println(this+".beforeDataRegionCreated Index: "+index);
+    return index;
   }
 
   private LuceneIndexImpl createIndexObject(String indexName, String regionPath, String[] fields,
       Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers, LuceneSerializer serializer,
       RegionAttributes attributes, String aeqId) {
-    return luceneIndexFactory.create(indexName, regionPath, cache, analyzer, fieldAnalyzers,
-        serializer, attributes, aeqId, fields, dm.getWaitingThreadPool());
+    System.err.println(this+".createIndexObject LuceneIndexFactory: "+luceneIndexFactory);
+    LuceneIndexImpl
+        index =
+        luceneIndexFactory.create(indexName, regionPath, cache, analyzer, fieldAnalyzers,
+            serializer, attributes, aeqId, fields, dm.getWaitingThreadPool());
+    System.err.println(this+".createIndexObject Index: "+index);
+    return index;
   }
 
   private void registerDefinedIndex(final String indexName, final String regionPath,

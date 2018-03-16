@@ -14,6 +14,12 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+
+import org.apache.lucene.analysis.Analyzer;
+
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
@@ -22,8 +28,25 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 
 public class LuceneRawIndex extends LuceneIndexImpl {
 
+  private ExecutorService waitingThreadPool;
+
   protected LuceneRawIndex(String indexName, String regionPath, InternalCache cache) {
     super(indexName, regionPath, cache);
+  }
+
+  public LuceneRawIndex(String indexName, String regionPath, InternalCache cache, Analyzer analyzer,
+                        Map<String, Analyzer> fieldAnalyzers,
+                        LuceneSerializer serializer, RegionAttributes attributes, String aeqId,
+                        String[] fields,
+                        ExecutorService waitingThreadPool) {
+    super(indexName, regionPath, cache);
+    this.waitingThreadPool = waitingThreadPool;
+    this.setSearchableFields(fields);
+    this.setAnalyzer(analyzer);
+    this.setFieldAnalyzers(fieldAnalyzers);
+    this.setLuceneSerializer(serializer);
+    this.setupRepositoryManager(serializer);
+    this.createAEQ(attributes, aeqId);
   }
 
   @Override
@@ -49,7 +72,8 @@ public class LuceneRawIndex extends LuceneIndexImpl {
   }
 
   @Override
-  public void destroy(boolean initiator) {}
+  public void destroy(boolean initiator) {
+  }
 
   @Override
   public boolean isIndexAvailable(int id) {
