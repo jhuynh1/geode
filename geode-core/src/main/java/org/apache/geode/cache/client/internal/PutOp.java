@@ -82,16 +82,12 @@ public class PutOp {
           if (e instanceof ServerOperationException) {
             throw e; // fixed 44656
           }
-          op.getMessage().setIsRetry();
+          event.setRetried(true);
           cms.removeBucketServerLocation(server);
         }
       }
     }
-    Object result = pool.execute(op);
-    if (op.getMessage().isRetry()) {
-      event.setRetried(true);
-    }
-    return result;
+    return pool.execute(op);
   }
 
   public static Object execute(ExecutablePool pool, String regionName, Object key, Object value,

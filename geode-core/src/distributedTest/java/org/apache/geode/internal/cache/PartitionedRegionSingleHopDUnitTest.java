@@ -654,6 +654,10 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     assertFalse(cms.isRefreshMetadataTestOnly());
   }
 
+  //meta data refresh
+  //does not occur if client happens to hit the correct node which is primary
+  //does not occur if connected to accessors/ node that contains no memory
+
   @Test
   public void testServerLocationRemovalThroughPing() {
     Integer port0 =
@@ -665,9 +669,11 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     Integer port3 =
         (Integer) member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(3, 4));
     createClient(port0, port1, port2, port3);
+
     putIntoPartitionedRegions();
     getFromPartitionedRegions();
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
+
     Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     await().until(() -> regionMetaData.size() == 4);
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
