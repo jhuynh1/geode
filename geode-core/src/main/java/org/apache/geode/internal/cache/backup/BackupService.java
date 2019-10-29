@@ -137,7 +137,14 @@ public class BackupService {
   }
 
   private void cleanup() {
+    cleanup(false);
+  }
+
+  private void cleanup(boolean abort) {
     cache.getDistributionManager().removeAllMembershipListener(membershipListener);
+    if (abort) {
+      currentTask.get().abort();
+    }
     currentTask.set(null);
   }
 
@@ -146,7 +153,7 @@ public class BackupService {
     @Override
     public void memberDeparted(DistributionManager distributionManager,
         InternalDistributedMember id, boolean crashed) {
-      cleanup();
+      cleanup(true);
     }
 
     @Override
