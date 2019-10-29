@@ -264,13 +264,15 @@ public class IncrementalBackupDistributedTest implements Serializable {
   public void testMissingMemberInBaseline() {
     // Simulate the missing member by forcing a persistent member to go offline.
     PersistentID missingMember = vm0.invoke(() -> getPersistentID(diskStoreName1));
-    TestCacheLifeCycleListener cacheLifecycleListenerForVm0 = new TestCacheLifeCycleListener();
     vm0.invoke(() -> {
-      GemFireCacheImpl.addCacheLifecycleListener(cacheLifecycleListenerForVm0);
+      GemFireCacheImpl.addCacheLifecycleListener(IncrementalBackupDistributedTest.testCacheLifeCycleListener);
     });
 
     vm0.invoke(() -> cacheRule.getCache().close());
-    await().until(() -> cacheLifecycleListenerForVm0.isCacheClosed);
+    vm0.invoke(() -> {
+      await().until(() -> IncrementalBackupDistributedTest.testCacheLifeCycleListener.isCacheClosed);
+    });
+
     logger.info("JASON expected vm0 to be closed" + vm0);
     await()
         .until(() -> vm1.invoke(() -> getMissingPersistentMembers().contains(missingMember)));
@@ -707,7 +709,8 @@ public class IncrementalBackupDistributedTest implements Serializable {
   }
 
 
-  public static class TestCacheLifeCycleListener implements CacheLifecycleListener {
+  public static TestCacheLifeCycleListener testCacheLifeCycleListener = new TestCacheLifeCycleListener();
+  public static class TestCacheLifeCycleListener implements CacheLifecycleListener, Serializable {
     Boolean isCacheClosed = false;
       public void cacheCreated(InternalCache cache) {
 
