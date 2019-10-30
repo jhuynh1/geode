@@ -603,7 +603,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
           CqQuery cqQuery;
           if ((cqQuery = queryService.getCq("cq1")) == null) {
             CqAttributesFactory cqFact = new CqAttributesFactory();
-            Method method = cqFact.getClass().getMethod("addCqListener" , CqListener.class);
+            Method method = cqFact.getClass().getMethod("addCqListener", CqListener.class);
             method.setAccessible(true);
             method.invoke(cqFact, new AuthzCqListener());
 
