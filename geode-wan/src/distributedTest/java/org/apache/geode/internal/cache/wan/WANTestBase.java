@@ -412,13 +412,41 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void createReplicatedRegion(String regionName, String senderIds, Boolean offHeap) {
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+            IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(InterruptedException.class.getName());
+            IgnoredException.addIgnoredException(InterruptedException.class.getName());
     IgnoredException exp2 =
-        IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
+            IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
     try {
       RegionFactory fact = cache.createRegionFactory(RegionShortcut.REPLICATE);
+      if (senderIds != null) {
+        StringTokenizer tokenizer = new StringTokenizer(senderIds, ",");
+        while (tokenizer.hasMoreTokens()) {
+          String senderId = tokenizer.nextToken();
+          fact.addGatewaySenderId(senderId);
+        }
+      }
+
+      fact.setOffHeap(offHeap);
+      Region r = fact.create(regionName);
+      assertNotNull(r);
+    } finally {
+      exp.remove();
+      exp1.remove();
+      exp2.remove();
+    }
+  }
+
+
+  public static void createReplicatedProxyRegion(String regionName, String senderIds, Boolean offHeap) {
+    IgnoredException exp =
+            IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+    IgnoredException exp1 =
+            IgnoredException.addIgnoredException(InterruptedException.class.getName());
+    IgnoredException exp2 =
+            IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
+    try {
+      RegionFactory fact = cache.createRegionFactory(RegionShortcut.REPLICATE_PROXY);
       if (senderIds != null) {
         StringTokenizer tokenizer = new StringTokenizer(senderIds, ",");
         while (tokenizer.hasMoreTokens()) {
@@ -1333,6 +1361,7 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void checkUnProcessedStats(String senderId, int events) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
+    logger.info("JASON :" + statistics.getUnprocessedEventsAddedBySecondary() + ":" + statistics.getUnprocessedTokensRemovedBySecondary());
     assertEquals(events, (statistics.getUnprocessedEventsAddedBySecondary()
         + statistics.getUnprocessedTokensRemovedBySecondary()));
     assertEquals(events, (statistics.getUnprocessedEventsRemovedByPrimary()
@@ -2254,6 +2283,24 @@ public class WANTestBase extends DistributedTestCase {
       exp2.remove();
     }
   }
+
+  public static void doPutsSameKey(String regionName, int numPuts, String key) {
+    IgnoredException exp1 =
+            IgnoredException.addIgnoredException(InterruptedException.class.getName());
+    IgnoredException exp2 =
+            IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
+    try {
+      Region r = cache.getRegion(Region.SEPARATOR + regionName);
+      assertNotNull(r);
+      for (long i = 0; i < numPuts; i++) {
+        r.put(key, "Value_" + i);
+      }
+    } finally {
+      exp1.remove();
+      exp2.remove();
+    }
+  }
+
 
   public static void doPutsAfter300(String regionName, int numPuts) {
     Region r = cache.getRegion(Region.SEPARATOR + regionName);
