@@ -5588,9 +5588,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (logger.isDebugEnabled()) {
         logger.debug("caught concurrent modification attempt when applying {}", event);
       }
-      notifyBridgeClients(event);
-      notifyGatewaySender(event.getOperation().isUpdate() ? EnumListenerEvent.AFTER_UPDATE
-          : EnumListenerEvent.AFTER_CREATE, event);
+//      if (!seenEvents.containsKey(event)) {
+//        seenEvents.put(event, event);
+
+        notifyBridgeClients(event);
+        notifyGatewaySender(event.getOperation().isUpdate() ? EnumListenerEvent.AFTER_UPDATE
+                : EnumListenerEvent.AFTER_CREATE, event);
+//      }
+//      }
       return false;
     }
 
@@ -5608,6 +5613,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     return oldEntry != null;
   }
+
+//  private static HashMap seenEvents = new HashMap();
 
   /**
    * check to see if a LowMemoryException should be thrown for this event
