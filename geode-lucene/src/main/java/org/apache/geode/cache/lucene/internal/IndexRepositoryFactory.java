@@ -19,6 +19,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -82,6 +84,7 @@ public class IndexRepositoryFactory {
     BucketRegion fileAndChunkBucket = getMatchingBucket(fileRegion, bucketId);
     BucketRegion dataBucket = getMatchingBucket(userRegion, bucketId);
     boolean success = false;
+
     if (fileAndChunkBucket == null) {
       if (oldRepository != null) {
         oldRepository.cleanup();
@@ -102,6 +105,16 @@ public class IndexRepositoryFactory {
     if (oldRepository != null) {
       oldRepository.cleanup();
     }
+
+    boolean hasOldMember = userRegion.getCache().getMembers().stream()
+            .map(InternalDistributedMember.class::cast)
+            .map(InternalDistributedMember::getVersionObject)
+            .anyMatch(version -> version.compareTo(Version.CURRENT) < 0);
+    if (hasOldMember) {
+      return null;
+    }
+
+
     DistributedLockService lockService = getLockService();
     String lockName = getLockName(fileAndChunkBucket);
     while (!lockService.lock(lockName, 100, -1)) {

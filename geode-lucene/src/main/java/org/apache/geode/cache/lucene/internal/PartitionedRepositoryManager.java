@@ -21,6 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
@@ -159,6 +161,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
     } catch (InterruptedException e) {
       throw new InternalGemFireError("Unable to create index repository", e);
     }
+
     IndexRepository repo = indexRepositories.compute(bucketId, (key, oldRepository) -> {
       try {
         if (closed) {
