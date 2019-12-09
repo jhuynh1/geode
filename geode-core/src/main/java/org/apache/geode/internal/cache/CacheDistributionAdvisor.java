@@ -159,14 +159,14 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
     getAdvisee().getCancelCriterion().checkCancelInProgress(null);
 
     // minimize volatile reads by copying ref to local var
-    long tempProfilesVersion = profilesVersion; // volatile read
-    long tempInRecoveryVersion = inRecoveryVersion; // volatile read
+//    long tempProfilesVersion = profilesVersion; // volatile read
+//    long tempInRecoveryVersion = inRecoveryVersion; // volatile read
 
-    if (adviseAllEventsVersion != tempProfilesVersion
-        || adviseInRecoveryVersion != tempInRecoveryVersion) {
-      synchronized (adviseSetforAllEvents) {
-        if (adviseAllEventsVersion != tempProfilesVersion
-            || adviseInRecoveryVersion != tempInRecoveryVersion) {
+//    if (adviseAllEventsVersion != tempProfilesVersion
+//        || adviseInRecoveryVersion != tempInRecoveryVersion) {
+//      synchronized (adviseSetforAllEvents) {
+//        if (adviseAllEventsVersion != tempProfilesVersion
+//            || adviseInRecoveryVersion != tempInRecoveryVersion) {
 
           adviseSetforAllEvents = Collections.unmodifiableSet(adviseFilter(profile -> {
             CacheProfile cp = (CacheProfile) profile;
@@ -175,16 +175,16 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
             }
             return cp.cachedOrAllEventsWithListener();
           }));
-          adviseAllEventsVersion = tempProfilesVersion;
-          adviseInRecoveryVersion = tempInRecoveryVersion;
-          try {
-            Thread.sleep(500);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
-        }
-      }
-    }
+//          adviseAllEventsVersion = tempProfilesVersion;
+//          adviseInRecoveryVersion = tempInRecoveryVersion;
+//          try {
+//            Thread.sleep(500);
+//          } catch (InterruptedException e) {
+//            e.printStackTrace();
+//          }
+//        }
+//      }
+//    }
     return adviseSetforAllEvents;
 
   }

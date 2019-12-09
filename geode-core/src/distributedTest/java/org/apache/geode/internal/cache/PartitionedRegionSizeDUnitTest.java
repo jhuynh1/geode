@@ -108,9 +108,9 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
     vm0.invoke(() -> createPartitionedRegion(200, 1));
 
     vm0.invoke(() -> {
-      Region<Integer, byte[]> region = getRegion(REGION_NAME);
+      Region<Integer, String> region = getRegion(REGION_NAME);
       for (int i = 0; i < 100; i++) {
-        region.put(i * TOTAL_NUMBER_OF_BUCKETS, new byte[100]);
+        region.put(i * TOTAL_NUMBER_OF_BUCKETS, "HELLO" + i);
       }
     });
 
@@ -126,7 +126,27 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
     vm1.invoke(() -> {
       PartitionedRegion partitionedRegion = getPartitionedRegion(REGION_NAME);
       long bytes = partitionedRegion.getDataStore().currentAllocatedMemory();
+      long startTime = System.currentTimeMillis();
+
+      while (bytes > 0 && System.currentTimeMillis() - startTime < 60000) {
+        bytes = partitionedRegion.getDataStore().currentAllocatedMemory();
+      }
+
+      if (bytes > 0) {
+        for (int i = 0; i < 100; i++) {
+          Object val = partitionedRegion.get(i * TOTAL_NUMBER_OF_BUCKETS);
+          if (val != null) {
+            System.out.println("JASON:" + val);
+            System.out.println("JASON REMOVING:" + partitionedRegion.destroy(i * TOTAL_NUMBER_OF_BUCKETS));
+            System.out.println(partitionedRegion.get(i * TOTAL_NUMBER_OF_BUCKETS));
+          }
+        }
+      }
+
+      long afterBytes = partitionedRegion.getDataStore().currentAllocatedMemory();
+      assertThat(afterBytes).isEqualTo(0);
       assertThat(bytes).isEqualTo(0);
+
     });
   }
 
